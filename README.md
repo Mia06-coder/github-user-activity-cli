@@ -9,8 +9,12 @@ Built with **Python** and features robust **error handling** and a **user-friend
 - Handles **network errors**, **invalid users**, and **rate limits**.
 - Interactive **CLI with commands** (`github-activity <username>`, `help`, `exit`).
 - Status messages and error alerts for better user experience.
+- Rich-formatted CLI with color output
+- Progress bar while fetching data
 
 ## Installation 🔧
+
+Make sure you have **Python 3.7+** installed.
 
 1. Clone the repository:
 
@@ -21,7 +25,7 @@ git clone https://github.com/mia06-coder/github-user-activity-cli.git
 2. Navigate into the directory:
 
 ```sh
-cd github-activity-cli
+cd github-user-activity-cli
 ```
 
 3. Install dependencies
@@ -35,16 +39,16 @@ pip install -r requirements.txt
 Run the script:
 
 ```sh
-python main.py
+python useractivity.py
 ```
 
 ## CLI Commands:
 
 ```sh
-Command	                        Description
-github-activity <username>	    Fetch GitHub activity of a user.
-help	                        Show available commands.
-exit	                        Quit the CLI.
+Command	                            → Description
+github-activity <username>	    → Fetch GitHub activity of a user.
+help	                            → Show available commands.
+exit	                            → Quit the CLI.
 ```
 
 ### Example:
@@ -52,7 +56,18 @@ exit	                        Quit the CLI.
 ```sh
 cli> github-activity octocat
 🔍 Fetching activity for GitHub user: octocat...
-✅ Data successfully fetched!
+✅ Fetch complete!
+```
+
+## Dependencies
+
+- **requests** → Handles HTTP requests to the GitHub API
+- **rich** → Provides colored output and a progress ba
+
+To install them manually:
+
+```sh
+pip install requests rich
 ```
 
 ## Error Handling 🛠
