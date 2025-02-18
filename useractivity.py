@@ -4,18 +4,20 @@ import json
 from rich.console import Console
 from collections import defaultdict
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
+from functools import lru_cache
 
 console = Console()
 
 GITHUB_API_URL = "https://api.github.com/users/{}/events"
 
+@lru_cache(maxsize=10) # Store up to 10 user's recent activity
 def fetch_github_activity(username):
     """
-    Fetch recent activity of a GitHub user.
+    Fetch and cache recent activity of a GitHub user.
     """
     api_url = GITHUB_API_URL.format(username)
 
-    # handle API response errors
+    # Handle API response errors
     try:
         with Progress(
             SpinnerColumn(),  # Spinning loader
@@ -60,7 +62,7 @@ def fetch_github_activity(username):
 
 def display_github_activity(username, events):
     """
-    Format GitHub activity events into readable messagess.
+    Format GitHub activity events.
     """
     push_events = defaultdict(int) # To push commits per repo
     messages = []
@@ -77,20 +79,20 @@ def display_github_activity(username, events):
                 commit_count = event.get("payload", {}).get("size", 0)
                 push_events[repo_name] += commit_count
             elif event_type == "IssuesEvent":
-                messages.append(f"❗ Opened a new issue to {repo_name}")
+                messages.append(f"🛠  Opened a new issue to {repo_name}")
             elif event_type == "WatchEvent":
                 messages.append(f"⭐ Starred {repo_name}")
             elif event_type == "ForkEvent":
-                messages.append(f"⏺️ Forked {repo_name}")
+                messages.append(f"🍴 Forked {repo_name}")
             elif event_type == "PullRequestEvent":
-                messages.append(f"🔶 Opened a pull request to {repo_name}")
+                messages.append(f"🔃 Opened a pull request to {repo_name}")
 
     except Exception as e:
-        messages.append(f"❌ Error processing an event: {str(e)}")
+        messages.append(f"[bold red]❌ Error processing an event: {str(e)}[/]")
 
     for repo, total_commits in push_events.items():
         commit_text = "commit" if total_commits == 1 else "commits"
-        messages.append(f"✅ Pushed {total_commits} {commit_text} to {repo}")
+        messages.append(f" ⬆ Pushed {total_commits} {commit_text} to {repo}")
 
     return messages
 
@@ -114,7 +116,13 @@ def main():
         if command.lower() == "help":
             print("\nAvailable Commands:")
             print(" github-activity <username>  ->  Fetch GitHub acivity")
+            print(" clear-cache                 ->  Clear cached data")
             print(" exit                        ->  Exit CLI")
+            continue
+
+        if command.lower() == "clear-cache":
+            fetch_github_activity.cache_clear()
+            print("🧹 Cache cleared!")
             continue
 
         # Regex pattern to extract username
@@ -128,7 +136,7 @@ def main():
             if user_events != None:
                 activities = display_github_activity(username,user_events)
                 for activity in activities:
-                    print(activity)
+                    console.print(activity)
         else:
             console.print("[bold red]❌ Invalid command.[/] Use 'help' for list of commands.")
 

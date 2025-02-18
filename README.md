@@ -17,6 +17,8 @@ Built with **Python** and features robust **error handling** and a **user-friend
   - Starred repositories (`WatchEvent`)
   - Forked repositories (`ForkEvent`)
   - Opened pull requests (`PullRequestEvent`)
+- Stores the latest data for up to 10 users to reduce API calls.
+- Use `clear-cache` to refresh stored data.
 
 ## Installation 🔧
 
@@ -53,6 +55,7 @@ python useractivity.py
 ```sh
 Command	                            → Description
 github-activity <username>	    → Fetch GitHub activity of a user.
+clear-cache                         → Clear cached data.
 help	                            → Show available commands.
 exit	                            → Quit the CLI.
 ```
