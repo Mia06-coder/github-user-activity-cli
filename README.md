@@ -11,6 +11,12 @@ Built with **Python** and features robust **error handling** and a **user-friend
 - Status messages and error alerts for better user experience.
 - Rich-formatted CLI with color output
 - Progress bar while fetching data
+- 📌 Supports:
+  - Pushed commits (`PushEvent`)
+  - Opened issues (`IssuesEvent`)
+  - Starred repositories (`WatchEvent`)
+  - Forked repositories (`ForkEvent`)
+  - Opened pull requests (`PullRequestEvent`)
 
 ## Installation 🔧
 
@@ -53,10 +59,35 @@ exit	                            → Quit the CLI.
 
 ### Example:
 
+#### Fetch GitHub User Activity
+
 ```sh
-cli> github-activity octocat
-🔍 Fetching activity for GitHub user: octocat...
+cli> github-activity mbostock
+⠏ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ Fetching data...
+```
+
+```sh
+cli> github-activity mbostock
 ✅ Fetch complete!
+
+📌 Recent Activity for mbostock
+----------------------------------------------------------------------
+🔶 Opened a pull request to observablehq/plot
+🔶 Opened a pull request to observablehq/plot
+🔶 Opened a pull request to observablehq/framework
+❗ Opened a new issue to esm-dev/esm.sh
+🔶 Opened a pull request to observablehq/framework
+❗ Opened a new issue to observablehq/framework
+🔶 Opened a pull request to observablehq/framework
+🔶 Opened a pull request to observablehq/framework
+✅ Pushed 3 commits to observablehq/plot
+✅ Pushed 3 commits to observablehq/framework
+```
+
+#### Exit CLI
+
+```sh
+cli> exit
 ```
 
 ## Dependencies

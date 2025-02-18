@@ -2,7 +2,7 @@ import re
 import requests
 import json
 from rich.console import Console
-from rich.prompt import Prompt
+from collections import defaultdict
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 
 console = Console()
@@ -39,9 +39,8 @@ def fetch_github_activity(username):
         if not data:
             console.print(f"[yellow]No recent activity found for this user.[/]")
             return
-        else:
-            console.print("[green]✅ Fetch complete![/]")
-            return
+        console.print("[green]✅ Fetch complete![/]")
+        return data
 
     except requests.exceptions.ConnectionError:
         console.print("[bold red]❌ Error:[/] No internet connection. Please check your network.")
@@ -58,6 +57,42 @@ def fetch_github_activity(username):
         console.print(f"[bold red]❌ Network Error:[/] {req_err}")
     except Exception as err:
         console.print(f"[bold red]❌ An unexpected error occurred:[/] {err}")
+
+def display_github_activity(username, events):
+    """
+    Format GitHub activity events into readable messagess.
+    """
+    push_events = defaultdict(int) # To push commits per repo
+    messages = []
+
+    print(f"\n📌 Recent Activity for {username.lower()}")
+    print("-"*70)
+
+    try:
+        for event in events:
+            event_type = event.get("type", "UnknownEvent")
+            repo_name = event.get("repo", {}).get("name", "UnknownRepo")
+
+            if event_type == "PushEvent":
+                commit_count = event.get("payload", {}).get("size", 0)
+                push_events[repo_name] += commit_count
+            elif event_type == "IssuesEvent":
+                messages.append(f"❗ Opened a new issue to {repo_name}")
+            elif event_type == "WatchEvent":
+                messages.append(f"⭐ Starred {repo_name}")
+            elif event_type == "ForkEvent":
+                messages.append(f"⏺️ Forked {repo_name}")
+            elif event_type == "PullRequestEvent":
+                messages.append(f"🔶 Opened a pull request to {repo_name}")
+
+    except Exception as e:
+        messages.append(f"❌ Error processing an event: {str(e)}")
+
+    for repo, total_commits in push_events.items():
+        commit_text = "commit" if total_commits == 1 else "commits"
+        messages.append(f"✅ Pushed {total_commits} {commit_text} to {repo}")
+
+    return messages
 
 def main():
     """
@@ -88,9 +123,12 @@ def main():
 
         if match:
             username = match.group(1).strip()
-            console.print(f"[bold cyan]🔍 Fetching activity for GitHub user: {username}...[/]")
-            fetch_github_activity(username)
-
+            user_events = fetch_github_activity(username)
+            
+            if user_events != None:
+                activities = display_github_activity(username,user_events)
+                for activity in activities:
+                    print(activity)
         else:
             console.print("[bold red]❌ Invalid command.[/] Use 'help' for list of commands.")
 
