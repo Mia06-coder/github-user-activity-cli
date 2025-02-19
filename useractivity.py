@@ -1,6 +1,9 @@
 import re
 import requests
 import json
+import pytz
+import tzlocal
+from datetime import datetime
 from rich.console import Console
 from collections import defaultdict
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
@@ -60,7 +63,7 @@ def fetch_github_activity(username):
     except Exception as err:
         console.print(f"[bold red]❌ An unexpected error occurred:[/] {err}")
 
-def display_github_activity(username, events):
+def display_github_activity(username, events, filter_type = None):
     """
     Format GitHub activity events.
     """
@@ -71,9 +74,18 @@ def display_github_activity(username, events):
     print("-"*70)
 
     try:
+        dt_obj= datetime.strptime(events[0]["created_at"], "%Y-%m-%dT%H:%M:%SZ")
+        utc_time = pytz.utc.localize(dt_obj)
+        local_timezone = tzlocal.get_localzone()
+        local_time = utc_time.astimezone(local_timezone)
+        last_active = local_time.strftime("%d %b %Y, %H:%M %Z")
+
         for event in events:
             event_type = event.get("type", "UnknownEvent")
             repo_name = event.get("repo", {}).get("name", "UnknownRepo")
+
+            if filter_type  and event_type != filter_type: 
+                continue
 
             if event_type == "PushEvent":
                 commit_count = event.get("payload", {}).get("size", 0)
@@ -86,7 +98,7 @@ def display_github_activity(username, events):
                 messages.append(f"🍴 Forked {repo_name}")
             elif event_type == "PullRequestEvent":
                 messages.append(f"🔃 Opened a pull request to {repo_name}")
-
+            
     except Exception as e:
         messages.append(f"[bold red]❌ Error processing an event: {str(e)}[/]")
 
@@ -94,7 +106,7 @@ def display_github_activity(username, events):
         commit_text = "commit" if total_commits == 1 else "commits"
         messages.append(f" ⬆ Pushed {total_commits} {commit_text} to {repo}")
 
-    return messages
+    return last_active, messages
 
 def main():
     """
@@ -115,9 +127,10 @@ def main():
 
         if command.lower() == "help":
             print("\nAvailable Commands:")
-            print(" github-activity <username>  ->  Fetch GitHub acivity")
-            print(" clear-cache                 ->  Clear cached data")
-            print(" exit                        ->  Exit CLI")
+            print(" github-activity <username>                        →  Fetch GitHub acivity")
+            print(" github-activity <username> <optional:event-type>  →  Fetch and filter GitHub acivity by event type")
+            print(" clear-cache                                       →  Clear cached data")
+            print(" exit                                              →  Exit CLI")
             continue
 
         if command.lower() == "clear-cache":
@@ -126,15 +139,17 @@ def main():
             continue
 
         # Regex pattern to extract username
-        user_activity_pattern = r'^github-activity\s+(\S+)$'
+        user_activity_pattern = r'^github-activity\s+(\S+)(?:\s+(\S+))?$'
         match = re.match(user_activity_pattern, command, re.IGNORECASE)
 
         if match:
             username = match.group(1).strip()
+            event_type = match.group(2).strip() if match.group(2) else None
             user_events = fetch_github_activity(username)
             
             if user_events != None:
-                activities = display_github_activity(username,user_events)
+                last_seen, activities = display_github_activity(username,user_events, event_type)
+                console.print(f"[yellow]Last active on {last_seen}\n[/]")
                 for activity in activities:
                     console.print(activity)
         else:

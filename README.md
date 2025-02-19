@@ -19,6 +19,7 @@ Built with **Python** and features robust **error handling** and a **user-friend
   - Opened pull requests (`PullRequestEvent`)
 - Stores the latest data for up to 10 users to reduce API calls.
 - Use `clear-cache` to refresh stored data.
+- Allows filtering by event type (e.g., `PushEvent`, `PullRequestEvent`)
 
 ## Installation 🔧
 
@@ -53,11 +54,13 @@ python useractivity.py
 ## CLI Commands:
 
 ```sh
-Command	                            → Description
-github-activity <username>	    → Fetch GitHub activity of a user.
-clear-cache                         → Clear cached data.
-help	                            → Show available commands.
-exit	                            → Quit the CLI.
+Command	                                            Description
+-------------------------------------------------------------------------
+github-activity <username>	                    → Fetch GitHub activity of a user.
+clear-cache                                         → Clear cached data.
+github-activity <username> <optional:event-type>    → Fetch and filter GitHub acivity by event type
+help	                                            → Show available commands.
+exit	                                            → Quit the CLI.
 ```
 
 ### Example:
@@ -75,16 +78,18 @@ cli> github-activity mbostock
 
 📌 Recent Activity for mbostock
 ----------------------------------------------------------------------
-🔶 Opened a pull request to observablehq/plot
-🔶 Opened a pull request to observablehq/plot
-🔶 Opened a pull request to observablehq/framework
-❗ Opened a new issue to esm-dev/esm.sh
-🔶 Opened a pull request to observablehq/framework
-❗ Opened a new issue to observablehq/framework
-🔶 Opened a pull request to observablehq/framework
-🔶 Opened a pull request to observablehq/framework
-✅ Pushed 3 commits to observablehq/plot
-✅ Pushed 3 commits to observablehq/framework
+Last active on 15 Feb 2025, 03:10 SAST
+
+🔃 Opened a pull request to observablehq/plot
+🔃 Opened a pull request to observablehq/plot
+🔃 Opened a pull request to observablehq/framework
+🛠  Opened a new issue to esm-dev/esm.sh
+🔃 Opened a pull request to observablehq/framework
+🛠  Opened a new issue to observablehq/framework
+🔃 Opened a pull request to observablehq/framework
+🔃 Opened a pull request to observablehq/framework
+⬆ Pushed 3 commits to observablehq/plot
+⬆ Pushed 3 commits to observablehq/framework
 ```
 
 #### Exit CLI
@@ -97,11 +102,12 @@ cli> exit
 
 - **requests** → Handles HTTP requests to the GitHub API
 - **rich** → Provides colored output and a progress ba
+- **tzlocal** → For dynamically detecting and using the local timezone.
 
 To install them manually:
 
 ```sh
-pip install requests rich
+pip install requests rich tzlocal
 ```
 
 ## Error Handling 🛠
