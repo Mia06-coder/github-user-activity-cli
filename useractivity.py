@@ -38,22 +38,22 @@ def fetch_github_activity(username):
             progress.update(task, completed=1)  # Marks progress as complete
 
         except json.JSONDecodeError:
-            console.print("[red]❌ Error:[/] failed to decode JSON response.")
+            console.print("[red]❌ [Error]:[/] failed to decode JSON response.")
             return 
 
         if not data:
-            console.print(f"[yellow]No recent activity found for this user.[/]")
+            console.print(f"[yellow]No recent activity found for {username} in the last 90 days.[/]")
             return
         console.print("[green]✅ Fetch complete![/]")
         return data
 
     except requests.exceptions.ConnectionError:
-        console.print("[bold red]❌ Error:[/] No internet connection. Please check your network.")
+        console.print("[bold red]❌ [Error]:[/] No internet connection. Please check your network.")
     except requests.exceptions.Timeout:
-        console.print("[bold red]❌ Error :[/]: Request timed out. GitHub API might be slow. Try again later.")
+        console.print("[bold red]❌ [Error] :[/]: Request timed out. GitHub API might be slow. Try again later.")
     except requests.exceptions.HTTPError as http_err:
         if response.status_code == 404:
-            console.print(f"[bold red]❌ Error {response.status_code}:[/] GitHub user not found.")
+            console.print(f"[bold red]❌ [Error] {response.status_code}:[/] GitHub user not found.")
         elif response.status_code == 403:
             console.print(f"[yellow]⚠️ Error {response.status_code}:[/] API rate limit exceeded. Try again later")
         else:
@@ -67,10 +67,14 @@ def display_github_activity(username, events, filter_type = None):
     """
     Format GitHub activity events.
     """
-    push_events = defaultdict(int) # To push commits per repo
-    messages = []
+    if not events:
+        return None,["[yellow]No recent activity to display.[/]"],
 
-    print(f"\n📌 Recent Activity for {username.lower()}")
+    grouped_events = defaultdict(lambda:defaultdict(int))
+    messages = []
+    user = events[0].get("actor","").get("login","UnkownUser")
+
+    print(f"\n📌 Recent Activity for {user}")
     print("-"*70)
 
     try:
@@ -84,27 +88,43 @@ def display_github_activity(username, events, filter_type = None):
             event_type = event.get("type", "UnknownEvent")
             repo_name = event.get("repo", {}).get("name", "UnknownRepo")
 
-            if filter_type  and event_type != filter_type: 
+            if filter_type and filter_type.lower() not in event_type.lower():
                 continue
 
-            if event_type == "PushEvent":
-                commit_count = event.get("payload", {}).get("size", 0)
-                push_events[repo_name] += commit_count
-            elif event_type == "IssuesEvent":
-                messages.append(f"🛠  Opened a new issue to {repo_name}")
-            elif event_type == "WatchEvent":
+
+            if event_type == "WatchEvent":
                 messages.append(f"⭐ Starred {repo_name}")
             elif event_type == "ForkEvent":
                 messages.append(f"🍴 Forked {repo_name}")
-            elif event_type == "PullRequestEvent":
-                messages.append(f"🔃 Opened a pull request to {repo_name}")
-            
-    except Exception as e:
-        messages.append(f"[bold red]❌ Error processing an event: {str(e)}[/]")
+            elif event_type == "CreateEvent" and event.get("payload",{}).get("ref_type", "UnknownRefType") == "repository":
+                messages.append(f"📁 Created a repository {repo_name}")
+            else:  
+                grouped_events[repo_name][event_type] += 1
 
-    for repo, total_commits in push_events.items():
-        commit_text = "commit" if total_commits == 1 else "commits"
-        messages.append(f" ⬆ Pushed {total_commits} {commit_text} to {repo}")
+    except KeyError as e:
+        messages.append(f"[bold red]❌ [Error][/] Missing expected key in response: {str(e)}")
+    except Exception as e:
+        messages.append(f"[bold red]❌ [Error][/] processing an event: {str(e)}")
+
+    event_icons = {
+        "CommitCommentEvent": "💬 Commented on a commit",
+        "DeleteEvent": "🗑 Deleted {} branch",
+        "IssueCommentEvent": "💬 Commented on {} issue",
+        "IssuesEvent": "🛠 Opened {} new issue",
+        "MemberEvent": "👥 Added {} new member",
+        "PullRequestEvent": "🔃 Opened {} pull request",
+        "PullRequestReviewEvent": "🔍 Reviewed {} pull request",
+        "PullRequestReviewCommentEvent": "💬 Commented on {} pull request review",
+        "PullRequestReviewThreadEvent": "💬 Started a thread in a pull request review",
+        "PushEvent": "⬆️  Pushed {} commit"
+    }
+
+    for repo, event_counts in grouped_events.items():
+        for event_type, count in event_counts.items():
+            if event_type in event_icons:
+                plural_suffix = "es" if count > 1 and event_type == "DeleteEvent" else "s" if count > 1 else ""      
+                event_text = event_icons[event_type].format(count)
+                messages.append(f"{event_text}{plural_suffix} to {repo}")
 
     return last_active, messages
 
@@ -147,11 +167,14 @@ def main():
             event_type = match.group(2).strip() if match.group(2) else None
             user_events = fetch_github_activity(username)
             
-            if user_events != None:
+            if user_events:
                 last_seen, activities = display_github_activity(username,user_events, event_type)
                 console.print(f"[yellow]Last active on {last_seen}\n[/]")
                 for activity in activities:
                     console.print(activity)
+        elif command == "":
+            continue # Ignore empty inputs
+
         else:
             console.print("[bold red]❌ Invalid command.[/] Use 'help' for list of commands.")
 
