@@ -78,18 +78,30 @@ cli> github-activity mbostock
 
 📌 Recent Activity for mbostock
 ----------------------------------------------------------------------
-Last active on 15 Feb 2025, 03:10 SAST
+Last active on 20 Feb 2025, 22:12 SAST
 
-🔃 Opened a pull request to observablehq/plot
-🔃 Opened a pull request to observablehq/plot
-🔃 Opened a pull request to observablehq/framework
-🛠  Opened a new issue to esm-dev/esm.sh
-🔃 Opened a pull request to observablehq/framework
-🛠  Opened a new issue to observablehq/framework
-🔃 Opened a pull request to observablehq/framework
-🔃 Opened a pull request to observablehq/framework
-⬆ Pushed 3 commits to observablehq/plot
-⬆ Pushed 3 commits to observablehq/framework
+💬 Commented on 2 issues to observablehq/plot
+🔃 Opened 4 pull requests to observablehq/plot
+⬆️  Pushed 5 commits to observablehq/plot
+🗑 Deleted  2 branches to observablehq/plot
+🛠 Opened  1 new issue to observablehq/plot
+🔍 Reviewed 1 pull request to observablehq/plot
+🔍 Reviewed 1 pull request to mbostock/isoformat
+cli> github-activity mbostock pull
+```
+
+#### Fetch GitHub User Activity by event type
+
+```sh
+cli> github-activity mbostock  pull
+
+📌 Recent Activity for mbostock
+----------------------------------------------------------------------
+Last active on 20 Feb 2025, 22:12 SAST
+
+🔃 Opened 4 pull requests to observablehq/plot
+🔍 Reviewed 1 pull request to observablehq/plot
+🔍 Reviewed 1 pull request to mbostock/isoformat
 ```
 
 #### Exit CLI
@@ -119,3 +131,8 @@ pip install requests rich tzlocal
 ## Contributing 🤝
 
 Feel free to open issues and submit pull requests to improve the project! 🎉
+
+## 🎨 Credits & Inspiration
+
+This project idea was inspired by [roadmap.sh](https://roadmap.sh/projects/github-user-activity).  
+Check it out for more project ideas and learning resources!
